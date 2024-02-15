@@ -39,9 +39,9 @@ def create():
         con.execute(
 '''CREATE TABLE accounts (
     account_id   INTEGER PRIMARY KEY,
-    user_id      INTEGER NOT NULL,
-    username     TEXT NOT NULL,
-    email        TEXT NOT NULL,
+    user_id      INTEGER,
+    username     TEXT,
+    email        TEXT,
 
     FOREIGN KEY (user_id) references users(user_id)
 )''')
@@ -83,22 +83,23 @@ CREATE TABLE comments (
 
 @click.command()
 @click.argument('username')
-def adduser(username):
-    print('creating user with name ', username)
+@click.argument('email')
+def adduser(username, email):
+    print('creating user with name', username, 'and email', email)
     with getdb() as con:
         cursor = con.cursor()
-        cursor.execute('''INSERT INTO users (username) VALUES (?)''', (username,))
+        cursor.execute('''INSERT INTO users (username, email) VALUES (?, ?)''', (username, email))
         id = cursor.lastrowid
         print(f'inserted with id={id}')
 
 @click.command()
 @click.argument('email')
 @click.argument('username')
-def addaccount(username, email):
+def addaccount(email, username):
     print('creating account with username', username, 'for email', email)
     with getdb() as con:
         cursor = con.cursor()
-        cursor.execute('''INSERT INTO accounts (user_id, username)
+        cursor.execute('''INSERT INTO accounts (email, username)
 VALUES ((SELECT user_id FROM users WHERE email = ?), ?)''', (email, username))
         id = cursor.lastrowid
         print(f'inserted with id={id}')
