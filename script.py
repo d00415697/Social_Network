@@ -59,7 +59,7 @@ def create():
         con.execute(
 '''
 CREATE TABLE posts (
-    post_id     INTEGER PRIMARY KEY,
+    post_id     INTEGER PRIMARY KEY AUTOINCREMENT,
     content     TEXT NOT NULL,
     account_id  INTEGER NOT NULL,
     likes       INTEGER,
@@ -95,7 +95,7 @@ def adduser(username, email):
 @click.command()
 @click.argument('email')
 @click.argument('username')
-def addaccount(email, username):
+def addaccount(username, email):
     print('creating account with username', username, 'for email', email)
     with getdb() as con:
         cursor = con.cursor()
@@ -104,7 +104,55 @@ VALUES ((SELECT user_id FROM users WHERE email = ?), ?)''', (email, username))
         id = cursor.lastrowid
         print(f'inserted with id={id}')
 
+@click.command()
+@click.argument('follower_id')
+@click.argument('followed_id')
+def follow(follower_id, followed_id):
+    print(f'User {follower_id} is now following User {followed_id}')
+    with getdb() as con:
+        cursor = con.cursor()
+        cursor.execute('''INSERT INTO followers (account_follow, account_me) VALUES (?, ?)''', (followed_id, follower_id))
+        id = cursor.lastrowid
+        print(f'Follow successful with id={id}')
+
+@click.command()
+@click.argument('account_id')
+@click.argument('content')
+def post(account_id, content):
+    print(f'User {account_id} posted {content}')
+    with getdb() as con:
+        cursor = con.cursor()
+        cursor.execute('''INSERT INTO posts (account_id, content, likes) VALUES (?, ?, ?)''', (account_id, content, 0))
+        id = cursor.lastrowid 
+        print(f'Inserted with id={id}')
+
+@click.command()
+@click.argument('post_id')
+@click.argument('account_id')
+@click.argument('content')
+def comment(post_id, account_id, content):
+    print(f'User {account_id} commented {content} on post {post_id}')
+    with getdb() as con:
+        cursor = con.cursor()
+        cursor.execute('''INSERT INTO comments (post_id, account_id, content) VALUES (?, ?, ?)''', (post_id, account_id, content))
+        id = cursor.lastrowid
+        print(f'Added comment with id={id}')
+
+@click.command()
+@click.argument('post_id')
+@click.argument('liker_id')
+def like(post_id, liker_id):
+    print(f'user {liker_id} liked the post {post_id}')
+    with getdb() as con:
+        cursor = con.cursor()
+        cursor.execute('''Update posts set likes = likes + 1 where post_id = ?  ''', (post_id))
+        print('liked successfully')
+
 cli.add_command(create)
 cli.add_command(adduser)
 cli.add_command(addaccount)
+cli.add_command(follow)
+cli.add_command(post)
+cli.add_command(comment)
+cli.add_command(like)
 cli()
