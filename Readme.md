@@ -8,6 +8,8 @@ Tables:
 - Accounts
 - Followers
 - Posts
+- Comments
+- Liked
 
 Features:
 - Likes
@@ -25,7 +27,7 @@ Queries:
 2. Stalker
     - Write a query that shows that shows compatibility rate from users who likes your post frequently.
 
-Functions:
+Functions: !!!use a function by typing python3 social.py <function_name> <arg1> <arg2> ...!!!
     -Adduser(email)
         Descrip: Adds the user's information.
     
@@ -52,3 +54,25 @@ Functions:
     
     -Unfollow(follower_id, account_id)
         Descrip:  Unfollow the current user
+
+Queries: !!!use a query by typing 'python3 social.py <query_name> <arg1> <arg2> ...'!!!
+    -users()
+        Shows all users created in the database.
+    -accounts()
+        Shows all accounts created in the database.
+    -multi(email)
+        Shows all accounts associated with a given email.
+    -follows()
+        Shows all follow links between all accounts. (May alter in the future to show all follow links connecting to a given account.)
+    -posts()
+        Shows all posts in the database.
+    -comments()
+        Shows all comments in the database.
+    -gossip()
+        Returns posts ranked from most popular to least popular based on how many likes they have.
+    -stalker(account_id)
+        Shows all accounts that have 'interest' in the given account. Interest is ranked by the number of times they have liked your posts. (May alter in the future to rank interest as the percentage of your posts that the person has liked.)
+
+The Script: usage (bash script.sh)
+    - script.sh:
+        This is a very basic script that creates a set of data and calls different methods and queries on that data.

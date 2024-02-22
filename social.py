@@ -23,74 +23,6 @@ def getdb(create=False):
 def cli():
     pass
 
-@click.command()
-def create():
-    print("Welcome to Face, a state-of-the-art social network.")
-    print("Creating database.")
-    with getdb(create=True) as con:
-        con.execute(
-'''CREATE TABLE users (
-    user_id          INTEGER PRIMARY KEY,
-    email           TEXT UNIQUE
-)''')
-        print('Users table created success.')
-        con.execute(
-'''CREATE UNIQUE INDEX user_id ON users (user_id)''')
-
-        con.execute(
-'''CREATE TABLE accounts (
-    account_id   INTEGER PRIMARY KEY,
-    username     TEXT UNIQUE,
-    email        TEXT 
-)''')
-
-        print('Accounts table created success.')
-        con.execute(
-'''CREATE TABLE followers (
-    account_follow   INTEGER,
-    account_me     INTEGER,
-
-    FOREIGN KEY (account_follow) REFERENCES accounts (account_id),
-    FOREIGN KEY (account_me) references accounts(account_id)
-)''')
-        print('Followers table created success.')
-        con.execute(
-'''
-CREATE TABLE posts (
-    post_id     INTEGER PRIMARY KEY AUTOINCREMENT,
-    content     TEXT NOT NULL,
-    account_id  INTEGER NOT NULL,
-    likes       INTEGER,
-
-    FOREIGN KEY (account_id) references accounts(account_id)
-)''')
-    print('TABLE posts CREATED SUCCESSFULLY')
-    con.execute(
-'''
-CREATE TABLE comments (
-    comment_id  INTEGER PRIMARY KEY,
-    content     TEXT NOT NULL,
-    account_id  INTEGER NOT NULL,
-    post_id     INTEGER NOT NULL,
-
-    FOREIGN KEY (account_id) references accounts(account_id),
-    FOREIGN KEY (post_id) references posts(post_id)
-)''')
-    print('TABLE comments CREATED SUCCESSFULLY')
-    con.execute(
-    '''
-CREATE TABLE liked (
-    liker_id    INTEGER,
-    post_id    INTEGER,
-
-    FOREIGN KEY (liker_id) references accounts(account_id),
-    FOREIGN KEY (post_id) references posts(post_id)
-)''')
-    print('table liked created')
-    print('database created')
-    print()
-
-
 # Adds a user with a given email, and assigns it an id.
 @click.command()
 @click.argument('email')
@@ -230,7 +162,12 @@ def unfollow(follower_id, account_id):
             cursor.execute('''DELETE from followers where account_follow = ? and account_me = ?''', (account_id, follower_id))
         else:
             print(f'\taccount {follower_id} does not follow account {account_id}, aborting...')
-
+            
+@click.command()
+def delete():
+    print("Deleting the universe")
+    os.remove("network.db")
+    print("Universe deleted")
 
 # Below is only queries, write implementation above.
 @click.command()
@@ -356,14 +293,9 @@ SELECT me.account_id, s.account_id, count(1) as interest
         for row in records:
             print("account:",row[1], "interest:", row[2], "on account:", row[0])
 
-@click.command()
-def delete():
-    print("Deleting the universe")
-    os.remove("network.db")
-    print("Universe deleted")
+
 
 # add commands
-cli.add_command(create)
 cli.add_command(adduser)
 cli.add_command(addaccount)
 cli.add_command(follow)

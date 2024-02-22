@@ -1,7 +1,8 @@
 #!/usr/bin
 
-# create the database
-python3 social.py create
+# Create the database
+rm -f network.db
+sqlite3 network.db<schema.sql
 
 # create users
 python3 social.py adduser example1@email.com
