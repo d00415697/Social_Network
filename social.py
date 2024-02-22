@@ -122,9 +122,21 @@ def follow(follower_id, followed_id):
     print(f'Account {follower_id} is now following Account {followed_id}')
     with getdb() as con:
         cursor = con.cursor()
+        # Include error handling for if one or both accounts don't exits.
+        cursor.execute('''SELECT 1 from accounts where account_id = ?''', (follower_id,))
+        record = cursor.fetchone()
+        if not record:
+            print(f'Follower account {follower_id} does not exist. Exiting...')
+            return
+        
+        cursor.execute('''SELECT 1 from accounts where account_id = ?''',(followed_id,))
+        record = cursor.fetchone()
+        if not record:
+            print(f'Account to follow: {followed_id}, does not exist. Exiting...')
+            return
+
         cursor.execute('''INSERT INTO followers (account_follow, account_me) VALUES (?, ?)''', (followed_id, follower_id))
         id = cursor.lastrowid
-        print(f'Follow successful with id={id}')
 
 # Creates a post linked to an account. Posts will be assigned an id for lookup. Posts
 # will have 'content' to fill them, and a likes field, which starts at 0.
@@ -190,7 +202,7 @@ def unlike(post_id, liker_id):
             cursor.execute('''UPDATE posts set likes = likes - 1 where post_id = ?''', (post_id,))
             cursor.execute('''DELETE from liked WHERE liker_id = ? AND post_id = ?''', (liker_id, post_id))
         else:
-            print("No like record found, exiting...")
+            print("\tNo like record found, exiting...")
 
 @click.command()
 @click.argument('follower_id')
@@ -199,13 +211,25 @@ def unfollow(follower_id, account_id):
     print(f'account {follower_id} unfollowed account {account_id}')
     with getdb() as con:
         cursor = con.cursor()
+        cursor.execute('''SELECT 1 from accounts where account_id = ?''', (follower_id,))
+        record = cursor.fetchone()
+        if not record:
+            print(f'Follower account {follower_id} does not exist. Exiting...')
+            return
+        
+        cursor.execute('''SELECT 1 from accounts where account_id = ?''',(account_id,))
+        record = cursor.fetchone()
+        if not record:
+            print(f'Account to unfollow: {account_id}, does not exist. Exiting...')
+            return
+        
         cursor.execute('''SELECT * from followers where account_follow = ? and account_me = ?''', (account_id, follower_id))
 
         record = cursor.fetchone()
         if record:
             cursor.execute('''DELETE from followers where account_follow = ? and account_me = ?''', (account_id, follower_id))
         else:
-            print(f'account {follower_id} does not follow account {account_id}, aborting...')
+            print(f'\taccount {follower_id} does not follow account {account_id}, aborting...')
 
 
 # Below is only queries, write implementation above.
@@ -309,7 +333,7 @@ SELECT p.post_id, p.account_id, p.content, p.likes
 ''')
         records = cursor.fetchall()
         for row in records:
-            print(row[0], row[1], row[2], row[3])
+            print("post:",row[0], "by account:",row[1], "content:",row[2], "popularity:",row[3])
 
 @click.command()
 @click.argument('account_id')
@@ -324,12 +348,13 @@ SELECT me.account_id, s.account_id, count(1) as interest
     JOIN posts p on me.account_id = p.account_id
     JOIN liked l on p.post_id = l.post_id
     JOIN accounts s on s.account_id = l.liker_id
+    where me.account_id = ?
     GROUP BY s.account_id
     ORDER BY interest desc
-''')
+''', (account_id,))
         records = cursor.fetchall()
         for row in records:
-            print(row[0], row[1], row[2])
+            print("account:",row[1], "interest:", row[2], "on account:", row[0])
 
 @click.command()
 def delete():

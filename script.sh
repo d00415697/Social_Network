@@ -68,12 +68,17 @@ python3 social.py follow 6 1
 python3 social.py follow 12 4
 python3 social.py follow 4 12
 python3 social.py follow 14 11
+
+python3 social.py follow 100 1
+python3 social.py follow 1 100
+
 python3 social.py follows
 python3 social.py unfollow 1 2
 python3 social.py unfollow 14 11
 python3 social.py unfollow 10 9
 python3 social.py unfollow 2 1
 python3 social.py unfollow 6 1
+python3 social.py unfollow 6 10
 python3 social.py follows
 
 # Create posts from different accounts
@@ -128,7 +133,7 @@ python3 social.py unlike 1 2
 
 python3 social.py posts
 
-python3 social.py stalker 1
+python3 social.py stalker 12
 
 
 
