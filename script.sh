@@ -45,6 +45,11 @@ python3 social.py addaccount lisa_smiles lisa.smiles@email.com
 python3 social.py addaccount user202 example5@email.com
 python3 social.py addaccount samantha23 samantha@email.com
 python3 social.py addaccount tom_jones tom.jones@email.com
+# Retrieve all accounts associated with a given user.
+python3 social.py query2 example1@email.com
+python3 social.py query2 jane.smith@email.com
+python3 social.py query2 maxwell@email.com
+
 
 # Create follow links between accounts using the 'follow' command.
 python3 social.py follow 1 2
@@ -57,6 +62,7 @@ python3 social.py follow 6 1
 python3 social.py follow 12 4
 python3 social.py follow 4 12
 python3 social.py follow 14 11
+python3 social.py query3
 
 # Create posts from different accounts
 python3 social.py post 12 "I'm excited for my birthday."
@@ -66,33 +72,25 @@ python3 social.py post 3 "No one told me there wasn't school today."
 python3 social.py post 7 "Live. Die. Repeat."
 python3 social.py post 12 "3 days until my bday"
 python3 social.py post 2 "I skipped school."
+python3 social.py query4
 
 # Comment on different posts from a commenter
 python3 social.py comment 1 7 "Happy Birthday!"
 python3 social.py comment 4 11 "There isn't school today. you're welcome"
 python3 social.py comment 7 6  "Congrats"
 python3 social.py comment 1 3 ":)"
+python3 social.py query5
 
-
-# Below are queries only on data already created. Simple queries can be removed once
-# tested adequately.
-
-# Retrieve all users created
-python3 social.py query0
-
-# Retrieve all accounts created
-python3 social.py query1
-
-# Retrieve all accounts associated with a given user.
-python3 social.py query2 example1@email.com
-python3 social.py query2 jane.smith@email.com
-python3 social.py query2 maxwell@email.com
-
-# Retrieve all follow links
-python3 social.py query3
-
-# Retrieve all posts made, what account made them, and the content
+# Add likes on comments.
+python3 social.py like 1 11
+python3 social.py like 2 11
+python3 social.py like 2 9
+python3 social.py like 3 12
+python3 social.py like 1 4
+python3 social.py like 6 7
+python3 social.py like 6 9
+python3 social.py like 5 11
 python3 social.py query4
 
-# Retrieve all comments on all posts.
-python3 social.py query5
+
+
