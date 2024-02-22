@@ -58,7 +58,20 @@ python3 social.py follow 12 4
 python3 social.py follow 4 12
 python3 social.py follow 14 11
 
+# Create posts from different accounts
+python3 social.py post 12 "I'm excited for my birthday."
+python3 social.py post 2 "I don't want to go to school."
+python3 social.py post 9 "I fought a hippo."
+python3 social.py post 3 "No one told me there wasn't school today."
+python3 social.py post 7 "Live. Die. Repeat."
+python3 social.py post 12 "3 days until my bday"
+python3 social.py post 2 "I skipped school."
 
+# Comment on different posts from a commenter
+python3 social.py comment 1 7 "Happy Birthday!"
+python3 social.py comment 4 11 "There isn't school today. you're welcome"
+python3 social.py comment 7 6  "Congrats"
+python3 social.py comment 1 3 ":)"
 
 
 # Below are queries only on data already created. Simple queries can be removed once
@@ -77,3 +90,9 @@ python3 social.py query2 maxwell@email.com
 
 # Retrieve all follow links
 python3 social.py query3
+
+# Retrieve all posts made, what account made them, and the content
+python3 social.py query4
+
+# Retrieve all comments on all posts.
+python3 social.py query5

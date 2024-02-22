@@ -25,6 +25,8 @@ def cli():
 
 @click.command()
 def create():
+    print("Welcome to Face, a state-of-the-art social network.")
+    print("Creating database.")
     with getdb(create=True) as con:
         con.execute(
 '''CREATE TABLE users (
@@ -76,6 +78,7 @@ CREATE TABLE comments (
 )''')
     print('TABLE comments CREATED SUCCESSFULLY')
     print('database created')
+    print()
 
 # Adds a user with a given email, and assigns it an id.
 @click.command()
@@ -216,7 +219,33 @@ def query3():
         print("--------------------")
     print()
 
+@click.command()
+def query4():
+    print("\nAll Posts.")
+    print("------------------------------------------------------------------------")
+    with getdb() as con:
+        cursor = con.cursor()
+        cursor.execute('''SELECT * from posts''')
+        records = cursor.fetchall()
+        for row in records:
+            print("post:", row[0], "says:" , row[1], "posted by account:", row[2], "with likes:", row[3])
+            print("--------------------------------------------------------------------------")
+        print()
 
+@click.command()
+def query5():
+    print("\nAll Comments.")
+    print("-------------------------------------------------------------------------")
+    with getdb() as con:
+        cursor = con.cursor()
+        cursor.execute('''SELECT * from comments''')
+        records = cursor.fetchall()
+        for row in records:
+            print("Comment:", row[0], "says: '", row[1], "' posted by account:", row[2], "on post:", row[3])
+            print("--------------------------------------------------------------------------")
+        print()
+
+# add commands
 cli.add_command(create)
 cli.add_command(adduser)
 cli.add_command(addaccount)
@@ -225,9 +254,12 @@ cli.add_command(post)
 cli.add_command(comment)
 cli.add_command(like)
 
+# add queries
 cli.add_command(query0)
 cli.add_command(query1)
 cli.add_command(query2)
 cli.add_command(query3)
+cli.add_command(query4)
+cli.add_command(query5)
 
 cli()
