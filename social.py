@@ -77,32 +77,41 @@ CREATE TABLE comments (
     FOREIGN KEY (post_id) references posts(post_id)
 )''')
     print('TABLE comments CREATED SUCCESSFULLY')
+    con.execute(
+    '''
+CREATE TABLE liked (
+    liker_id    INTEGER,
+    post_id    INTEGER,
+
+    FOREIGN KEY (liker_id) references accounts(account_id),
+    FOREIGN KEY (post_id) references posts(post_id)
+)''')
+    print('table liked created')
     print('database created')
     print()
+
 
 # Adds a user with a given email, and assigns it an id.
 @click.command()
 @click.argument('email')
 def adduser(email):
-    print('created user with email', email)
     with getdb() as con:
         cursor = con.cursor()
         cursor.execute('''INSERT INTO users (email) VALUES (?)''', (email,))
         id = cursor.lastrowid
-        print(f'inserted with id={id}')
+        print(f'Created user with email {email} inserted with id={id}')
 
 # Adds an account to a email with a username, assigns it an id.
 @click.command()
 @click.argument('username')
 @click.argument('email')
 def addaccount(username, email):
-    print('creating account with username', username, 'for email', email)
     with getdb() as con:
         cursor = con.cursor()
         cursor.execute('''INSERT INTO accounts (email, username) VALUES (?, ?)''', (email, username))
         con.commit()
         id = cursor.lastrowid
-        print(f'inserted with id={id}')
+        print(f'Created account with username {username} for email {email} inserted with id={id}')
 
 # Creates a 'follow' link from one account to another. Does not make a 2 way link,
 # meaning both accounts must follow eachother before they will be linked 2 ways.
@@ -153,13 +162,55 @@ def like(post_id, liker_id):
     print(f'user {liker_id} liked the post {post_id}')
     with getdb() as con:
         cursor = con.cursor()
-        cursor.execute('''Update posts set likes = likes + 1 where post_id = ?  ''', (post_id))
-        print('liked successfully')
+        
+        # Check if the user has already liked the post
+        cursor.execute('''SELECT * FROM liked WHERE liker_id = ? AND post_id = ?''', (liker_id, post_id))
+        record = cursor.fetchone()
+        
+        if record:
+            print("User already liked the post")
+        else:
+            # Increment the likes count in the posts table
+            cursor.execute('''UPDATE posts SET likes = likes + 1 WHERE post_id = ?''', (post_id,))
+            # Insert the like record into the liked table
+            cursor.execute('''INSERT INTO liked (liker_id, post_id) VALUES (?, ?)''', (liker_id, post_id))
+            print("Liked successfully")
+
+@click.command()
+@click.argument('post_id')
+@click.argument('liker_id')
+def unlike(post_id, liker_id):
+    print(f'user {liker_id} unliked post {post_id}')
+    with getdb() as con:
+        cursor = con.cursor()
+        cursor.execute('''SELECT * from liked where liker_id = ? and post_id = ?''', (liker_id, post_id))
+
+        record = cursor.fetchone()
+        if record:
+            cursor.execute('''UPDATE posts set likes = likes - 1 where post_id = ?''', (post_id,))
+            cursor.execute('''DELETE from liked WHERE liker_id = ? AND post_id = ?''', (liker_id, post_id))
+        else:
+            print("No like record found, exiting...")
+
+@click.command()
+@click.argument('follower_id')
+@click.argument('account_id')
+def unfollow(follower_id, account_id):
+    print(f'account {follower_id} unfollowed account {account_id}')
+    with getdb() as con:
+        cursor = con.cursor()
+        cursor.execute('''SELECT * from followers where account_follow = ? and account_me = ?''', (account_id, follower_id))
+
+        record = cursor.fetchone()
+        if record:
+            cursor.execute('''DELETE from followers where account_follow = ? and account_me = ?''', (account_id, follower_id))
+        else:
+            print(f'account {follower_id} does not follow account {account_id}, aborting...')
 
 
 # Below is only queries, write implementation above.
 @click.command()
-def query0():
+def users():
     print("\nUsers Registered")
     print("---------------------------------------")
     with getdb() as con:
@@ -174,7 +225,7 @@ def query0():
     print()
 
 @click.command()
-def query1():
+def accounts():
     print("\nAccounts Created")
     print("-----------------------------------------------------")
     with getdb() as con:
@@ -190,7 +241,7 @@ def query1():
 
 @click.command()
 @click.argument('email')
-def query2(email):
+def multi(email):
     print("\nAll accounts associated with a given email.")
     print("----------------------------------------------------")
     with getdb() as con:
@@ -205,7 +256,7 @@ def query2(email):
     print()
 
 @click.command()
-def query3():
+def follows():
     print("\nAll follow links.")
     print("--------------------")
     with getdb() as con:
@@ -220,7 +271,7 @@ def query3():
     print()
 
 @click.command()
-def query4():
+def posts():
     print("\nAll Posts.")
     print("------------------------------------------------------------------------")
     with getdb() as con:
@@ -233,7 +284,7 @@ def query4():
         print()
 
 @click.command()
-def query5():
+def comments():
     print("\nAll Comments.")
     print("-------------------------------------------------------------------------")
     with getdb() as con:
@@ -245,6 +296,47 @@ def query5():
             print("--------------------------------------------------------------------------")
         print()
 
+@click.command()
+def gossip():
+    print("\nReturn popular posts, ranked by #likes")
+    print("-----------------------------------------------------")
+    with getdb() as con:
+        cursor = con.cursor()
+        cursor.execute('''
+SELECT p.post_id, p.account_id, p.content, p.likes 
+    FROM posts p
+    ORDER BY p.likes desc
+''')
+        records = cursor.fetchall()
+        for row in records:
+            print(row[0], row[1], row[2], row[3])
+
+@click.command()
+@click.argument('account_id')
+def stalker(account_id):
+    print(f"Finding who has the most interest in account {account_id}")
+    print('--------------------------------------------')
+    with getdb() as con:
+        cursor = con.cursor()
+        cursor.execute('''
+SELECT me.account_id, s.account_id, count(1) as interest
+    FROM accounts me 
+    JOIN posts p on me.account_id = p.account_id
+    JOIN liked l on p.post_id = l.post_id
+    JOIN accounts s on s.account_id = l.liker_id
+    GROUP BY s.account_id
+    ORDER BY interest desc
+''')
+        records = cursor.fetchall()
+        for row in records:
+            print(row[0], row[1], row[2])
+
+@click.command()
+def delete():
+    print("Deleting the universe")
+    os.remove("network.db")
+    print("Universe deleted")
+
 # add commands
 cli.add_command(create)
 cli.add_command(adduser)
@@ -253,13 +345,18 @@ cli.add_command(follow)
 cli.add_command(post)
 cli.add_command(comment)
 cli.add_command(like)
+cli.add_command(unlike)
+cli.add_command(unfollow)
+cli.add_command(delete)
 
 # add queries
-cli.add_command(query0)
-cli.add_command(query1)
-cli.add_command(query2)
-cli.add_command(query3)
-cli.add_command(query4)
-cli.add_command(query5)
+cli.add_command(users)
+cli.add_command(accounts)
+cli.add_command(multi)
+cli.add_command(follows)
+cli.add_command(posts)
+cli.add_command(comments)
+cli.add_command(gossip)
+cli.add_command(stalker)
 
 cli()
