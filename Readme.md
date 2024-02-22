@@ -66,6 +66,8 @@ Queries: !!!use a query by typing 'python3 social.py <query_name> <arg1> <arg2> 
         Shows all follow links between all accounts. (May alter in the future to show all follow links connecting to a given account.)
     -posts()
         Shows all posts in the database.
+    -feed(account_id)
+        Shows all posts made by accounts the given account follows.
     -comments()
         Shows all comments in the database.
     -gossip()

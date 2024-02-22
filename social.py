@@ -162,7 +162,7 @@ def unfollow(follower_id, account_id):
             cursor.execute('''DELETE from followers where account_follow = ? and account_me = ?''', (account_id, follower_id))
         else:
             print(f'\taccount {follower_id} does not follow account {account_id}, aborting...')
-            
+
 @click.command()
 def delete():
     print("Deleting the universe")
@@ -293,6 +293,24 @@ SELECT me.account_id, s.account_id, count(1) as interest
         for row in records:
             print("account:",row[1], "interest:", row[2], "on account:", row[0])
 
+@click.command()
+@click.argument('account_id')
+def feed(account_id):
+    print("Posts from people you follow.")
+    print('-------------------------------------')
+    with getdb() as con:
+        cursor = con.cursor()
+        # Fetch posts from people the specified account follows
+        cursor.execute('''
+            SELECT pp.post_id, pp.content, pp.account_id 
+            FROM posts pp
+            JOIN followers f ON pp.account_id = f.account_follow
+            WHERE f.account_me = ?
+        ''', (account_id,))
+        records = cursor.fetchall()
+        for row in records:
+            print(f'post:{row[0]}, says:{row[1]}, made by account:{row[2]}')
+
 
 
 # add commands
@@ -312,6 +330,7 @@ cli.add_command(accounts)
 cli.add_command(multi)
 cli.add_command(follows)
 cli.add_command(posts)
+cli.add_command(feed)
 cli.add_command(comments)
 cli.add_command(gossip)
 cli.add_command(stalker)

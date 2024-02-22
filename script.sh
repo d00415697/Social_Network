@@ -68,6 +68,8 @@ python3 social.py follow 7 2
 python3 social.py follow 6 1
 python3 social.py follow 12 4
 python3 social.py follow 4 12
+python3 social.py follow 4 2
+
 python3 social.py follow 14 11
 
 python3 social.py follow 100 1
